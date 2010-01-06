@@ -1,2 +1,2 @@
-require 'grabmytriples'
+require 'app'
 run Sinatra::Application
