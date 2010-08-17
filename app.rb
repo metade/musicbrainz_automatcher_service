@@ -42,7 +42,7 @@ def artist_data(gid)
   facebook = facebook_data(links) || {}
   { :gid => gid,
     :name => artist.name,
-    :twitter => twitter[:twitter],
+    :twitter => twitter[:username],
     :twitter_followers => twitter[:followers],
     :facebook => facebook[:page],
     :facebook_fans => facebook[:fans]
