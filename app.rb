@@ -1,8 +1,12 @@
 require 'rubygems'
 require 'sinatra'
+require 'sinatra/respond_to'
 require 'musicbrainz_automatcher'
 require 'erb'
 require 'open-uri'
+
+Sinatra::Application.register Sinatra::RespondTo
+
 
 AUTOMATCHER = MusicbrainzAutomatcher.new
 
@@ -34,7 +38,7 @@ def artist_data(gid)
   links = artist.get_relations.map { |u| u.target }
   { :gid => gid,
     :name => artist.name,
-    :links => links,
+    # :links => links,
     :twitter => twitter_data(links),
     :facebook => facebook_data(links),
   }
@@ -44,7 +48,7 @@ get '/' do
   erb :index
 end
 
-get '/artists/automatch.:format' do |format|
+get '/artists/automatch' do |format|
   artists = params.keys.
               select { |k| k =~ /artist\d*/ }.sort.
               map { |k| params[k] }
@@ -53,6 +57,9 @@ get '/artists/automatch.:format' do |format|
   
   gid = AUTOMATCHER.match_artist(artists, track)
   raise Sinatra::NotFound.new('Unable to match artist') unless gid
-  
-  artist_data(gid).to_json
+  data = artist_data(gid)
+  respond_to do |wants|
+    wants.xml { data.to_xml }
+    wants.json { data.to_json }
+  end
 end
