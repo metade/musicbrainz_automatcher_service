@@ -36,11 +36,14 @@ def artist_data(gid)
   query = MusicBrainz::Webservice::Query.new
   artist = query.get_artist_by_id(gid, :url_rels => true)
   links = artist.get_relations.map { |u| u.target }
+  twitter = twitter_data(links) || {}
+  facebook = facebook_data(links) || {}
   { :gid => gid,
     :name => artist.name,
-    # :links => links,
-    :twitter => twitter_data(links),
-    :facebook => facebook_data(links),
+    :twitter => twitter[:twitter],
+    :twitter_followers => twitter[:followers],
+    :facebook => facebook[:page],
+    :facebook_fans => facebook[:fans]
   }
 end
 
@@ -59,7 +62,7 @@ get '/artists/automatch' do |format|
   raise Sinatra::NotFound.new('Unable to match artist') unless gid
   data = artist_data(gid)
   respond_to do |wants|
-    wants.xml { data.to_xml }
+    wants.xml { data.to_xml(:root => 'artist') }
     wants.json { data.to_json }
   end
 end
