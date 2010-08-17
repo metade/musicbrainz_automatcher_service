@@ -1,6 +1,8 @@
 require 'rubygems'
 require 'sinatra'
 require 'sinatra/respond_to'
+require 'builder'
+
 require 'musicbrainz_automatcher'
 require 'erb'
 require 'open-uri'
@@ -60,9 +62,9 @@ get '/artists/automatch' do |format|
   
   gid = AUTOMATCHER.match_artist(artists, track)
   raise Sinatra::NotFound.new('Unable to match artist') unless gid
-  data = artist_data(gid)
+  @data = artist_data(gid)
   respond_to do |wants|
-    wants.xml { data.to_xml(:root => 'artist') }
-    wants.json { data.to_json }
+    wants.xml { builder :artists_automatch }
+    wants.json { @data.to_json }
   end
 end
