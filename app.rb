@@ -21,6 +21,8 @@ get '/' do
 end
 
 get '/artists/automatch' do
+  headers['Cache-Control'] = 'public, max-age=300'
+  
   artists = params.keys.
               select { |k| k =~ /artist\d*/ }.sort.
               map { |k| params[k] }
