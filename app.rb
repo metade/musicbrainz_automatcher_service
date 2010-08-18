@@ -9,8 +9,8 @@ require 'open-uri'
 
 Sinatra::Application.register Sinatra::RespondTo
 
-
 AUTOMATCHER = MusicbrainzAutomatcher.new
+AUTOMATCHER.logger.level = Logger::INFO
 
 def twitter_data(links)
   twitter = links.map { |u| $1 if u =~ %r[twitter\.com/(\w+)] }.compact.first
@@ -53,7 +53,7 @@ get '/' do
   erb :index
 end
 
-get '/artists/automatch' do |format|
+get '/artists/automatch' do
   artists = params.keys.
               select { |k| k =~ /artist\d*/ }.sort.
               map { |k| params[k] }
