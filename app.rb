@@ -9,8 +9,32 @@ require 'open-uri'
 
 Sinatra::Application.register Sinatra::RespondTo
 
-AUTOMATCHER = MusicbrainzAutomatcher.new
-AUTOMATCHER.logger.level = Logger::INFO
+configure do
+  # require 'memcached'
+  # CACHE = ActiveSupport::Cache::MemCacheStore.new
+  AUTOMATCHER = MusicbrainzAutomatcher.new # :cache_type => CACHE
+  AUTOMATCHER.logger.level = Logger::INFO
+end
+
+get '/' do
+  erb :index
+end
+
+get '/artists/automatch' do
+  artists = params.keys.
+              select { |k| k =~ /artist\d*/ }.sort.
+              map { |k| params[k] }
+  artists.delete_if { |a| a.blank? }
+  track = params['track']
+  
+  gid = AUTOMATCHER.match_artist(artists, track)
+  raise Sinatra::NotFound.new('Unable to match artist') unless gid
+  @data = artist_data(gid)
+  respond_to do |wants|
+    wants.xml { builder :artists_automatch }
+    wants.json { @data.to_json }
+  end
+end
 
 def twitter_data(links)
   twitter = links.map { |u| $1 if u =~ %r[twitter\.com/(\w+)] }.compact.first
@@ -47,24 +71,4 @@ def artist_data(gid)
     :facebook => facebook[:page],
     :facebook_fans => facebook[:fans]
   }
-end
-
-get '/' do
-  erb :index
-end
-
-get '/artists/automatch' do
-  artists = params.keys.
-              select { |k| k =~ /artist\d*/ }.sort.
-              map { |k| params[k] }
-  artists.delete_if { |a| a.blank? }
-  track = params['track']
-  
-  gid = AUTOMATCHER.match_artist(artists, track)
-  raise Sinatra::NotFound.new('Unable to match artist') unless gid
-  @data = artist_data(gid)
-  respond_to do |wants|
-    wants.xml { builder :artists_automatch }
-    wants.json { @data.to_json }
-  end
 end
