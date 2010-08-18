@@ -7,4 +7,5 @@ xml.artist do |artist|
   artist.facebook_fans @data[:facebook_fans]
   artist.twitter @data[:twitter]
   artist.twitter_followers @data[:twitter_followers]
+  artist.total @data[:total]
 end

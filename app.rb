@@ -69,6 +69,7 @@ def artist_data(gid)
     :twitter => twitter[:username],
     :twitter_followers => twitter[:followers],
     :facebook => facebook[:page],
-    :facebook_fans => facebook[:fans]
+    :facebook_fans => facebook[:fans],
+    :total => (facebook[:fans] || 0) + (twitter[:followers] || 0)
   }
 end
